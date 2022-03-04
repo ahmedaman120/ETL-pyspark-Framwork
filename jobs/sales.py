@@ -18,7 +18,13 @@ def main():
     
     config = openFile(f"{BASE_DIR}/json/sales.json")
     ss = startSpark(config)
-    
+    #import data from datasource to pyspark
+    transactionDS = importData(ss, f"{BASE_DIR}/test-data/sales/transactions",".json$")
+    # customersDS = importData(ss, f"{BASE_DIR}/test-data/sales/customers.csv")
+    # productsDS = importData(ss, f"{BASE_DIR}/test-data/sales/products.csv")
+
+
+
     print(stopSpark(ss))
 
 def openFile(dir:str) -> dict:
@@ -37,6 +43,11 @@ def startSpark(config:dict) -> SparkSession:
 def stopSpark(spark:SparkSession) -> bool:
     spark.stop()
     return 
+
+def importData(spark:SparkSession, filePath:str,pattern:Optional[str]=None) -> DataFrame:
+    if isinstance(spark, SparkSession):
+        classPyspark.Sparkclass(config={}).importData(spark,filePath,pattern)
+
 if __name__ == '__main__':
     main()
     
