@@ -1,0 +1,18 @@
+{
+
+    "spark_conf": {
+        "master": "local[*]",
+        "appname": "sales"
+    },
+
+    "config": {
+        "deltalake": true
+    },
+
+    "log": {
+        "level1": "ERROR",
+        "level2": "INFO"
+
+    }
+
+}
