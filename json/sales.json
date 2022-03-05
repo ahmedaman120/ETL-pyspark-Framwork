@@ -10,8 +10,7 @@
     },
 
     "log": {
-        "level1": "ERROR",
-        "level2": "INFO"
+        "level1": "ERROR"
 
     }
 

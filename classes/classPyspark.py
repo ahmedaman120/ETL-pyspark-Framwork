@@ -24,13 +24,57 @@ class Sparkclass:
                     return "file"
         
         #function to open dir
-        def openDir(dir: str, pattern:Optional[str]=None):
+        def openDir(getUFilesExtension:Callable,dir: str, pattern:Optional[str]=None)->list:
+            filesList = []
             if isinstance(dir ,str) and os.path.exists(dir):
-                    print(self._listDir(dir,pattern))
+                    filesList = self._listDir(dir,pattern)
+                    exts = getUFilesExtension(filesList)
+                    return filesList,exts
+        def openFile(getUFilesExtension:Callable,dir:str):
+            filesListF = []
+            if isinstance(dir ,str) and os.path.exists(dir):
+                    filesListF.append(dir)
+                    exts = getUFilesExtension(filesListF)
+                    return filesListF,exts
+        def getFilesExtension(files:list) -> list:
+            if isinstance(files, list) and len(files) > 0:
+                exts = list(set([os.path.splitext(f)[1] for f in files]))
+                return exts[0] if len(exts) ==1 else None
         pathType = fileOrDir(folderPath)
-        switcher = {'dir':openDir(folderPath,pattern)}
-        switcher[pathType]
-        # print(files)
+        # print(pathType)
+        if pathType =='dir':
+           files,exts= openDir(getFilesExtension,folderPath,pattern)
+        elif pathType=='file':
+           files,exts= openFile(getFilesExtension,folderPath)
+        return self.createDataFrame(ss,files,exts)
+    
+    def createDataFrame(self, spark:SparkSession,files:list,filetype:str)-> DataFrame:
+        # print()
+        def creatFromCSV(fileList:list)->DataFrame:
+            print("***********csv***********")
+            fileList2 =["file://" +f for f in fileList]
+            df = spark.read.format("csv")\
+                            .option("header","true")\
+                            .option("mode","DROPMALFORMED")\
+                            .load(fileList2)
+            
+            return df
+            
+        def creatFromJSON(fileList:list)->DataFrame:
+            print("***********json***********")
+            fileList2 =["file://" +f for f in fileList]
+            df = spark.read.format("json") \
+                            .option("mode","PERMISSIVE") \
+                            .option("permissiveAsString","true") \
+                            .load(fileList2)
+            return df
+            
+        print(filetype)
+        if filetype =='.json':
+           return creatFromJSON(files)
+        elif filetype == '.csv':
+            return creatFromCSV(files)
+        
 
     
     def _listDir(self, dir:str,pattern:Optional[str]=None) ->list:
@@ -43,15 +87,17 @@ class Sparkclass:
                 return filesList
 
         def filterPatter(dir:str, pattern:Optional[str]=None):
-            print("i am performed")
+            # print("i am performed")
             return [x for x in recursiveFileList(dir) if re.search(rf'{pattern}',x)]
         return recursiveFileList(dir) if pattern ==None else filterPatter(dir,pattern)
     
+    
+
     def sparkStart(self,kwargs:dict) ->SparkSession:
         appName: str = kwargs['spark_conf']['appname'] 
         MASTER: str  = kwargs['spark_conf']['master']
         LOGLEVEL: str  = kwargs['log']['level1']
-        LOGLEVEL2: str  = kwargs['log']['level2']
+        # LOGLEVEL2: str  = kwargs['log']['level2']
 
 
         def startSparkSession(master:Optional[str]= "local[*]"
@@ -73,9 +119,3 @@ class Sparkclass:
         getSession(self.spark)
 
         return startSparkSession(self.spark)
-    
-
-    
-
-        
-    
